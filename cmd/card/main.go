@@ -82,7 +82,7 @@ func main() {
 	}
 
 	//Инициация и первоначальная настройка перевода
-	trf1 := transfer.NewService(svc, feeSet)
+	trf := transfer.NewService(svc, feeSet)
 
 	//Выполнение перевода
 	fromNumber := "1111 1111 1111 0001" //Протестировать свои карты - меням последнюю цифру от 1 до 5

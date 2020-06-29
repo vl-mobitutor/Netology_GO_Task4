@@ -20,7 +20,7 @@ func NewService(cardSvc *card.Service, feeSet []Fee) *Service {
 	}
 }
 
-func (s *Service) Card2Card(from, to string, amount int) (total int, ok bool) {
+func (s *Service) Card2Card(fromNumber, toNumber string, amount int) (total int, ok bool) {
 
 
 	return total, ok

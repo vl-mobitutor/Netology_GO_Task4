@@ -6,7 +6,6 @@ import (
 	"github.com/vl-mobitutor/Netology_GO_Task4/pkg/transfer"
 )
 
-
 func main() {
 
 	//Массив карт к выпуску
@@ -56,7 +55,7 @@ func main() {
 	}
 
 
-	//Инициируем и настраиваем перевод
+	//Настройки комиссий
 	feeSet := []transfer.Fee {
 		{
 			Description: "С карты банка на карту банка",
@@ -69,18 +68,14 @@ func main() {
 			FeeMinimum: 10_00,
 		},
 		{
-			Description: "С карты банка на внешнюю карту",
+			Description: "С внешней карты на внешнюю карту",
 			FeePercentage: 0.015,
 			FeeMinimum: 30_00,
 		},
 	}
+
+	//Инициация и настройка перевода
 	trf := transfer.NewService(svc, feeSet)
-
-	for _, value := range trf.Fees {
-		fmt.Println(*value)
-	}
-
-	//trf.Card2Card("1111 1111 1111 0001", "1111 1111 1111 0002", 300_00)
-
+	trf.Card2Card("1111 1111 1111 0001", "1111 1111 1111 0002", 300_00)
 
 }

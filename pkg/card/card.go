@@ -28,3 +28,15 @@ func (s *Service) IssueCard(id int64, issuer, currency, number string) *Card {
 	s.Cards = append(s.Cards, card)
 	return card
 }
+
+func (s *Service) findMyCard(cardNumber string) (result bool){
+	for _, value := range s.Cards {
+		if value.Number == cardNumber {
+			result = true
+			break
+		}
+		result = false
+	}
+
+	return result
+}

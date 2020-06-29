@@ -8,7 +8,7 @@ import (
 
 func main() {
 
-	//Массив карт к выпуску
+	//Массив карт к "выпуску"
 	myCards := []card.Card {
 		{
 			Id: 1,
@@ -42,40 +42,65 @@ func main() {
 		},
 	}
 
-	//Выпускаем карты и кладем на счет по 1000 рублей
+	//Выпускаем карты и кладем каждой карте на счет по 10_000 рублей
 	svc := card.NewService("Super Bank")
 	for index, newCard := range myCards {
 		svc.IssueCard(newCard.Id, newCard.Issuer, newCard.Currency, newCard.Number)
-		svc.Cards[index].Balance = 1000_00
+		svc.Cards[index].Balance = 10_000_00
 	}
 
-	//Показываем карты до перевода
+
+	fmt.Println("-------------------Балансы собственных карт банка до операции перевода---------------------------")
 	for _, value := range svc.Cards {
 		fmt.Println(*value)
 	}
-
+	fmt.Println("------------------------------------------------------------------------------")
+	fmt.Println()
 
 	//Настройки комиссий
 	feeSet := []transfer.Fee {
 		{
-			Description: "С карты банка на карту банка",
-			FeePercentage: 0.00,
-			FeeMinimum: 0,
+			Description: "С карты на карту внутри банка",
+			FeePercentage: 0.0000, //0.00%
+			FeeMinimum: 0, //Минимальная комиссия в копейках
 		},
 		{
 			Description: "С карты банка на внешнюю карту",
-			FeePercentage: 0.005,
-			FeeMinimum: 10_00,
+			FeePercentage: 0.0050, //0.5%
+			FeeMinimum: 10_00, //Минимальная комиссия в копейках
+		},
+		{
+			Description: "С внешней карты на карту банка",
+			FeePercentage: 0.0000, //0.0%
+			FeeMinimum: 0, //Минимальная комиссия в копейках
 		},
 		{
 			Description: "С внешней карты на внешнюю карту",
-			FeePercentage: 0.015,
-			FeeMinimum: 30_00,
+			FeePercentage: 0.0150, //1.5%
+			FeeMinimum: 30_00, //Минимальная комиссия в копейках
 		},
 	}
 
-	//Инициация и настройка перевода
+	//Инициация и первоначальная настройка перевода
 	trf := transfer.NewService(svc, feeSet)
-	trf.Card2Card("1111 1111 1111 0001", "1111 1111 1111 0002", 300_00)
+
+	//Выполнение перевода
+	fromNumber := "1111 1111 1111 0001" //Протестировать свои карты - меням последнюю цифру от 1 до 5
+	toNumber := "1111 1111 1111 0002"   //Протестировать внешние карты - меняем первые цифры
+	amount := 7000_00
+	totalAmount, transferOk :=trf.Card2Card(fromNumber, toNumber, int64(amount))
+
+	if transferOk {
+		fmt.Printf("Перевод c карты %s успешно выполнен: \n", fromNumber)
+		fmt.Printf("Сумма перевода - %d \n", amount)
+		fmt.Printf("Полная сумма списания с комиссией - %d \n", totalAmount)
+		fmt.Println()
+		fmt.Println("-------------------Балансы собственных карт банка после операции перевода------------------------")
+		for _, value := range svc.Cards {
+			fmt.Println(*value)
+		}
+	} else {
+		fmt.Printf("Перевод на сумму %d не выполнен!", totalAmount)
+	}
 
 }

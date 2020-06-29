@@ -29,14 +29,18 @@ func (s *Service) IssueCard(id int64, issuer, currency, number string) *Card {
 	return card
 }
 
-func (s *Service) findMyCard(cardNumber string) (result bool){
-	for _, value := range s.Cards {
+//Поиск номера карты в массиве собственных карт банка
+func (s *Service) FindMyCard(cardNumber string) (result bool, cardIndex int){
+
+	for index, value := range s.Cards {
 		if value.Number == cardNumber {
 			result = true
+			cardIndex = index
 			break
 		}
 		result = false
+		cardIndex = 0
 	}
 
-	return result
+	return result, cardIndex
 }

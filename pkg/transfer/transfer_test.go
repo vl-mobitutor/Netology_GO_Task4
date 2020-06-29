@@ -475,7 +475,7 @@ func TestService_Card2Card(t *testing.T) {
 				toNumber: "2111 1111 1111 0002",
 				amount: 5_000_00,
 			},
-			wantTotalSum: 5_074_00,
+			wantTotalSum: 5_075_00,
 			wantOk:       true,
 		},
 	}

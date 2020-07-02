@@ -8,7 +8,7 @@ import (
 
 type Service struct {
 	CardSvc *card.Service
-	Fees []Fee
+	Fees map[string]Fee
 }
 
 type Fee struct {
@@ -17,7 +17,8 @@ type Fee struct {
 	FeeMinimum int64 //Минимальная комиссия - указывается в копейках
 }
 
-func NewService(cardSvc *card.Service, feeSet []Fee) *Service {
+//Функция-конструктор сервиса
+func NewService(cardSvc *card.Service, feeSet map[string]Fee) *Service {
 	return &Service {
 		CardSvc: cardSvc,
 		Fees: feeSet,
@@ -25,124 +26,93 @@ func NewService(cardSvc *card.Service, feeSet []Fee) *Service {
 }
 
 
+//Функция расчета комиссии
+func (s *Service) FeeCalculation (operationType string, operationAmount int64) (fee int64) {
+	fee = int64( math.Round(s.Fees[operationType].FeePercentage * float64(operationAmount)))
+
+	if fee < s.Fees[operationType].FeeMinimum {
+		fee = s.Fees[operationType].FeeMinimum
+	}
+
+	return fee
+}
+
+
 //Функция перевода по номеру карты
 func (s *Service) Card2Card(fromNumber, toNumber string, amount int64) (totalSum int64, ok bool) {
 	var myFee int64
 
-	//Проверка на совпадение номеров карты-источника и карты получателя
-	if fromNumber == toNumber {
+	if fromNumber == toNumber { //Проверка на совпадение номеров карты-источника и карты получателя
 		fmt.Println("Номера карты-источника и карты-получателя совпадают!")
 		return amount, false
 	}
 
-	//Проверка корректности суммы перевода
-	if amount <= 0 {
+	if amount <= 0 { //Проверка корректности суммы перевода
 		fmt.Println("Некорректная сумма перевода!")
 		return amount, false
 	}
 
+	//Определяем по номерам чьи карты
+	cardFrom := s.CardSvc.SearchByNumber(fromNumber)
+	cardTo := s.CardSvc.SearchByNumber(toNumber)
 
-	//Определяем чьи карты
-	isFromOur, cardFromIndex := s.CardSvc.FindMyCard(fromNumber)
-	isToOur, cardToIndex := s.CardSvc.FindMyCard(toNumber)
 
+	//-----------------------------Блок, если обе карты "наши"---------------------------------
+	if (cardFrom != nil) && (cardTo != nil) {
 
-	//----------------------------------------------------------------------------------------------
-	//Блок, если обе карты "наши"
-	if (isFromOur == true) && (isToOur == true) {
+		totalSum = amount + s.FeeCalculation("in-to-in", amount) //Полная сумма списания с карты-источника
 
-		//Установка комиссии
-		myFee = int64( math.Round(s.Fees[0].FeePercentage * float64(amount)))
-		if myFee < s.Fees[0].FeeMinimum {
-			myFee = s.Fees[0].FeeMinimum
-		}
-
-		totalSum = amount + myFee //Полная сумма списания с карты-источника
-
-		//Т.к. карты наши, то сразу проводим списание и зачисление
-		if totalSum < s.CardSvc.Cards[cardFromIndex].Balance {
-
-			//Списание с карты источника суммы перевода  + комиссия
-			s.CardSvc.Cards[cardFromIndex].Balance = s.CardSvc.Cards[cardFromIndex].Balance - totalSum
-
-			//Зачисление на карту-получатель суммы перевода (без комиссии)
-			s.CardSvc.Cards[cardToIndex].Balance = s.CardSvc.Cards[cardToIndex].Balance + amount
-
-			fmt.Println("Тип перевода - внутрибанковский платеж")
-			ok = true
-
-		} else {
+		if totalSum > cardFrom.Balance {
 			fmt.Printf("На карте %s недостаточно средств для перевода! \n", fromNumber)
 			ok = false
+			return
 		}
 
+		cardFrom.Balance -= totalSum //Списание с карты источника суммы перевода  + комиссия
+		cardTo.Balance += amount //Зачисление на карту-получатель суммы перевода (без комиссии)
+
+		fmt.Println("Тип перевода - внутрибанковский платеж")
+		ok = true
 	}
 
 
-	//-----------------------------------------------------------------------------------------------
-	//Блок, если с "нашей" карты на внешнюю карту
-	if (isFromOur == true) && (isToOur == false) {
+	//-------------------------Блок, если с "нашей" карты на внешнюю карту---------------------
+	if (cardFrom !=nil ) && (cardTo == nil) {
 
-		//Установка комиссии
-		myFee = int64( math.Round(s.Fees[1].FeePercentage * float64(amount)))
-		if myFee < s.Fees[1].FeeMinimum {
-			myFee = s.Fees[1].FeeMinimum
-		}
+		totalSum = amount + s.FeeCalculation("in-to-out", amount) //Полная сумма списания с карты-источника
 
-		totalSum = amount + myFee //Полная сумма списания с карты-источника
-
-		//Проводим только списание с нашей карты
-		if totalSum < s.CardSvc.Cards[cardFromIndex].Balance {
-
-			//Списание с карты источника суммы перевода  + комиссия
-			s.CardSvc.Cards[cardFromIndex].Balance = s.CardSvc.Cards[cardFromIndex].Balance - totalSum
-
-			fmt.Println("Тип перевода - с карты банка на внешнюю карту")
-			ok = true
-
-		} else {
+		if totalSum > cardFrom.Balance {
 			fmt.Printf("На карте %s недостаточно средств для перевода! \n", fromNumber)
 			ok = false
+			return
 		}
 
+		cardFrom.Balance -= totalSum //Списание с карты источника суммы перевода  + комиссия
+
+		fmt.Println("Тип перевода - с карты банка на внешнюю карту")
+		ok = true
 	}
 
 
-	//----------------------------------------------------------------------------------------------
-	//Блок, если с внешней карты на карту банка
-	if (isFromOur == false) && (isToOur == true) {
+	//------------------------Блок, если с внешней карты на карту банка------------------------
+	if (cardFrom == nil) && (cardTo != nil) {
 
-		//Установка комиссии
-		myFee = int64( math.Round(s.Fees[2].FeePercentage * float64(amount)))
-		if myFee < s.Fees[2].FeeMinimum {
-			myFee = s.Fees[2].FeeMinimum
-		}
+		totalSum = amount + s.FeeCalculation("out-to-in", amount) //Полная сумма списания с карты-источника
 
 		totalSum = amount + myFee //Полная сумма списания с карты-источника
-
-		//Зачисление на карту-получатель суммы перевода (без комиссии)
-		s.CardSvc.Cards[cardToIndex].Balance = s.CardSvc.Cards[cardToIndex].Balance + amount
+		cardTo.Balance += amount //Зачисление на карту-получатель суммы перевода (без комиссии)
 
 		fmt.Println("Тип перевода - с внешней карты на карту банка")
 		ok = true
-
 	}
 
-	//----------------------------------------------------------------------------------------------
-	//Блок, если с внешней карты на внешнюю банка
-	if (isFromOur == false) && (isToOur == false) {
+	//------------------------Блок, если с внешней карты на внешнюю банка---------------------
+	if (cardFrom == nil) && (cardTo == nil) {
 
-		//Установка комиссии
-		myFee = int64( math.Round(s.Fees[3].FeePercentage * float64(amount)))
-		if myFee < s.Fees[3].FeeMinimum {
-			myFee = s.Fees[3].FeeMinimum
-		}
-
-		totalSum = amount + myFee //Полная сумма списания с карты-источника
+		totalSum = amount + s.FeeCalculation("out-to-out", amount) //Полная сумма списания с карты-источника
 
 		fmt.Println("Тип перевода - с внешней карты на внешнюю карту")
 		ok = true
-
 	}
 
 	return totalSum, ok

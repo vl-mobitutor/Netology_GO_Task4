@@ -8,7 +8,7 @@ import (
 func TestService_Card2Card(t *testing.T) {
 	type fields struct {
 		CardSvc *card.Service
-		Fees    []Fee
+		Fees    map[string]Fee
 	}
 	type args struct {
 		fromNumber string
@@ -22,8 +22,9 @@ func TestService_Card2Card(t *testing.T) {
 		wantTotalSum int64
 		wantOk       bool
 	}{
-		//Параметры тестовых кейсов
+
 		{
+			//-------------------------Параметры тестовых кейсов-------------------------------------
 			name:         "Tecт1 - Карта своего банка -> Карта своего банка (денег достаточно)",
 			fields:       fields{
 				CardSvc: &card.Service{
@@ -67,23 +68,23 @@ func TestService_Card2Card(t *testing.T) {
 					},
 				},
 
-				Fees: []Fee {
-					{
+				Fees: map[string]Fee {
+					"in-to-in": {
 						Description: "С карты на карту внутри банка",
 						FeePercentage: 0.0000, //0.00%
 						FeeMinimum: 0, //Минимальная комиссия в копейках
 					},
-					{
+					"in-to-out": {
 						Description: "С карты банка на внешнюю карту",
 						FeePercentage: 0.0050, //0.5%
 						FeeMinimum: 10_00, //Минимальная комиссия в копейках
 					},
-					{
+					"out-to-in": {
 						Description: "С внешней карты на карту банка",
 						FeePercentage: 0.0000, //0.0%
 						FeeMinimum: 0, //Минимальная комиссия в копейках
 					},
-					{
+					"out-to-out": {
 						Description: "С внешней карты на внешнюю карту",
 						FeePercentage: 0.0150, //1.5%
 						FeeMinimum: 30_00, //Минимальная комиссия в копейках
@@ -100,6 +101,7 @@ func TestService_Card2Card(t *testing.T) {
 		},
 
 		{
+			//---------------------------------------------------------------------------------------
 			name:         "Tecт2 - Карта своего банка -> Карта своего банка (денег недостаточно)",
 			fields:       fields{
 				CardSvc: &card.Service{
@@ -143,23 +145,23 @@ func TestService_Card2Card(t *testing.T) {
 					},
 				},
 
-				Fees: []Fee {
-					{
+				Fees: map[string]Fee {
+					"in-to-in": {
 						Description: "С карты на карту внутри банка",
 						FeePercentage: 0.0000, //0.00%
 						FeeMinimum: 0, //Минимальная комиссия в копейках
 					},
-					{
+					"in-to-out": {
 						Description: "С карты банка на внешнюю карту",
 						FeePercentage: 0.0050, //0.5%
 						FeeMinimum: 10_00, //Минимальная комиссия в копейках
 					},
-					{
+					"out-to-in": {
 						Description: "С внешней карты на карту банка",
 						FeePercentage: 0.0000, //0.0%
 						FeeMinimum: 0, //Минимальная комиссия в копейках
 					},
-					{
+					"out-to-out": {
 						Description: "С внешней карты на внешнюю карту",
 						FeePercentage: 0.0150, //1.5%
 						FeeMinimum: 30_00, //Минимальная комиссия в копейках
@@ -176,6 +178,7 @@ func TestService_Card2Card(t *testing.T) {
 		},
 
 		{
+			//--------------------------------------------------------------------------------------
 			name:         "Tecт3 - Карта своего банка -> Карта чужого банка (денег достаточно)",
 			fields:       fields{
 				CardSvc: &card.Service{
@@ -219,23 +222,23 @@ func TestService_Card2Card(t *testing.T) {
 					},
 				},
 
-				Fees: []Fee {
-					{
+				Fees: map[string]Fee {
+					"in-to-in": {
 						Description: "С карты на карту внутри банка",
 						FeePercentage: 0.0000, //0.00%
 						FeeMinimum: 0, //Минимальная комиссия в копейках
 					},
-					{
+					"in-to-out": {
 						Description: "С карты банка на внешнюю карту",
 						FeePercentage: 0.0050, //0.5%
 						FeeMinimum: 10_00, //Минимальная комиссия в копейках
 					},
-					{
+					"out-to-in": {
 						Description: "С внешней карты на карту банка",
 						FeePercentage: 0.0000, //0.0%
 						FeeMinimum: 0, //Минимальная комиссия в копейках
 					},
-					{
+					"out-to-out": {
 						Description: "С внешней карты на внешнюю карту",
 						FeePercentage: 0.0150, //1.5%
 						FeeMinimum: 30_00, //Минимальная комиссия в копейках
@@ -252,6 +255,7 @@ func TestService_Card2Card(t *testing.T) {
 		},
 
 		{
+			//--------------------------------------------------------------------------------------
 			name:         "Tecт4 - Карта своего банка -> Карта чужого банка (денег недостаточно)",
 			fields:       fields{
 				CardSvc: &card.Service{
@@ -295,23 +299,23 @@ func TestService_Card2Card(t *testing.T) {
 					},
 				},
 
-				Fees: []Fee {
-					{
+				Fees: map[string]Fee {
+					"in-to-in": {
 						Description: "С карты на карту внутри банка",
 						FeePercentage: 0.0000, //0.00%
 						FeeMinimum: 0, //Минимальная комиссия в копейках
 					},
-					{
+					"in-to-out": {
 						Description: "С карты банка на внешнюю карту",
 						FeePercentage: 0.0050, //0.5%
 						FeeMinimum: 10_00, //Минимальная комиссия в копейках
 					},
-					{
+					"out-to-in": {
 						Description: "С внешней карты на карту банка",
 						FeePercentage: 0.0000, //0.0%
 						FeeMinimum: 0, //Минимальная комиссия в копейках
 					},
-					{
+					"out-to-out": {
 						Description: "С внешней карты на внешнюю карту",
 						FeePercentage: 0.0150, //1.5%
 						FeeMinimum: 30_00, //Минимальная комиссия в копейках
@@ -328,6 +332,7 @@ func TestService_Card2Card(t *testing.T) {
 		},
 
 		{
+			//--------------------------------------------------------------------------------------
 			name:         "Tecт5 - Карта чужого банка -> Карта своего банка",
 			fields:       fields{
 				CardSvc: &card.Service{
@@ -371,23 +376,23 @@ func TestService_Card2Card(t *testing.T) {
 					},
 				},
 
-				Fees: []Fee {
-					{
+				Fees: map[string]Fee {
+					"in-to-in": {
 						Description: "С карты на карту внутри банка",
 						FeePercentage: 0.0000, //0.00%
 						FeeMinimum: 0, //Минимальная комиссия в копейках
 					},
-					{
+					"in-to-out": {
 						Description: "С карты банка на внешнюю карту",
 						FeePercentage: 0.0050, //0.5%
 						FeeMinimum: 10_00, //Минимальная комиссия в копейках
 					},
-					{
+					"out-to-in": {
 						Description: "С внешней карты на карту банка",
 						FeePercentage: 0.0000, //0.0%
 						FeeMinimum: 0, //Минимальная комиссия в копейках
 					},
-					{
+					"out-to-out": {
 						Description: "С внешней карты на внешнюю карту",
 						FeePercentage: 0.0150, //1.5%
 						FeeMinimum: 30_00, //Минимальная комиссия в копейках
@@ -404,6 +409,7 @@ func TestService_Card2Card(t *testing.T) {
 		},
 
 		{
+			//--------------------------------------------------------------------------------------
 			name:         "Tecт6 - Карта чужого банка -> Карта чужого банка",
 			fields:       fields{
 				CardSvc: &card.Service{
@@ -447,23 +453,23 @@ func TestService_Card2Card(t *testing.T) {
 					},
 				},
 
-				Fees: []Fee {
-					{
+				Fees: map[string]Fee {
+					"in-to-in": {
 						Description: "С карты на карту внутри банка",
 						FeePercentage: 0.0000, //0.00%
 						FeeMinimum: 0, //Минимальная комиссия в копейках
 					},
-					{
+					"in-to-out": {
 						Description: "С карты банка на внешнюю карту",
 						FeePercentage: 0.0050, //0.5%
 						FeeMinimum: 10_00, //Минимальная комиссия в копейках
 					},
-					{
+					"out-to-in": {
 						Description: "С внешней карты на карту банка",
 						FeePercentage: 0.0000, //0.0%
 						FeeMinimum: 0, //Минимальная комиссия в копейках
 					},
-					{
+					"out-to-out": {
 						Description: "С внешней карты на внешнюю карту",
 						FeePercentage: 0.0150, //1.5%
 						FeeMinimum: 30_00, //Минимальная комиссия в копейках

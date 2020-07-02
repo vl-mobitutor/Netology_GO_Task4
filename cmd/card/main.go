@@ -58,23 +58,23 @@ func main() {
 	fmt.Println()
 
 	//Настройки комиссий
-	feeSet := []transfer.Fee {
-		{
+	feeSet := map[string]transfer.Fee {
+		"in-to-in": {
 			Description: "С карты на карту внутри банка",
 			FeePercentage: 0.0000, //0.00%
 			FeeMinimum: 0, //Минимальная комиссия в копейках
 		},
-		{
+		"in-to-out": {
 			Description: "С карты банка на внешнюю карту",
 			FeePercentage: 0.0050, //0.5%
 			FeeMinimum: 10_00, //Минимальная комиссия в копейках
 		},
-		{
+		"out-to-in": {
 			Description: "С внешней карты на карту банка",
 			FeePercentage: 0.0000, //0.0%
 			FeeMinimum: 0, //Минимальная комиссия в копейках
 		},
-		{
+		"out-to-out": {
 			Description: "С внешней карты на внешнюю карту",
 			FeePercentage: 0.0150, //1.5%
 			FeeMinimum: 30_00, //Минимальная комиссия в копейках
@@ -86,8 +86,8 @@ func main() {
 
 	//Выполнение перевода
 	fromNumber := "1111 1111 1111 0001" //Протестировать свои карты - меням последнюю цифру от 1 до 5
-	toNumber := "1111 1111 1111 0002"   //Протестировать внешние карты - меняем первые цифры
-	amount := 7000_00
+	toNumber := "2111 1111 1111 0002"   //Протестировать внешние карты - меняем первые цифры
+	amount := 20000_00
 	totalAmount, transferOk :=trf.Card2Card(fromNumber, toNumber, int64(amount))
 
 	if transferOk {
